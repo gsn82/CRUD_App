@@ -1,12 +1,15 @@
 package ru.gorshkov.springcource.controllers;
 
 
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.gorshkov.springcource.DAO.PersonDAO;
 import ru.gorshkov.springcource.model.Person;
 
+import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/people")
@@ -26,7 +29,6 @@ public class PeopleController {
 
     @GetMapping("/{id}")
     public String show(@PathVariable("id") int id, Model model) {
-
         model.addAttribute("person", personDAO.show(id));
         return "people/show";
     }
@@ -37,7 +39,11 @@ public class PeopleController {
     }
 
     @PostMapping()
-    public String creat(@ModelAttribute("person") Person person) {
+    public String create(@ModelAttribute("person") @Valid Person person,
+                         BindingResult bindingResult) {
+        if (bindingResult.hasErrors())
+            return "people/new";
+
         personDAO.save(person);
         return "redirect:/people";
     }
@@ -49,10 +55,12 @@ public class PeopleController {
     }
 
     @PatchMapping("/{id}")
-    public String update(@ModelAttribute("person") Person person,
+    public String update(@ModelAttribute("person") @Valid Person person, BindingResult bindingResult,
                          @PathVariable("id") int id) {
-        personDAO.update(id, person);
+        if (bindingResult.hasErrors())
+            return "people/edit";
 
+        personDAO.update(id, person);
         return "redirect:/people";
     }
 
@@ -61,5 +69,4 @@ public class PeopleController {
         personDAO.delete(id);
         return "redirect:/people";
     }
-
 }
